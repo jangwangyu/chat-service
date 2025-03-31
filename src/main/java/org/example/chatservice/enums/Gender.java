@@ -1,6 +1,6 @@
 package org.example.chatservice.enums;
 
-public enum Genders
+public enum Gender
 {
   MALE, FEMALE
 

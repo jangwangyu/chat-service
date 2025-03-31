@@ -10,9 +10,11 @@ import jakarta.persistence.Id;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.chatservice.enums.Genders;
+import org.example.chatservice.enums.Gender;
 
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,12 +27,12 @@ public class Member {
   Long id;
 
   String email;
-  String nickname;
+  String nickName;
   String name;
   @Enumerated(EnumType.STRING)
-  Genders gender;
+  Gender gender;
   String phoneNumber;
-  LocalDate birthday;
+  LocalDate birthDay;
   String role;
 
 }

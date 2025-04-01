@@ -1,3 +1,10 @@
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
 spring:
   application:
     name: chat-service
@@ -15,8 +22,8 @@ spring:
       client:
         registration:
           kakao:
-            client-id:
-            client-secret:
+            client-id: d74a0fd3881f724cfac72c719b21f060
+            client-secret: 15dmphIP78aWLGlwdLFn9Z8Ht8W6Td1N
             scope:
               - profile_nickname
               - account_email

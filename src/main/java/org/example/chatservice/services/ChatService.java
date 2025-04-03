@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.chatservice.dto.ChatroomDto;
 import org.example.chatservice.entities.Chatroom;
 import org.example.chatservice.entities.Member;
 import org.example.chatservice.entities.MemberChatroomMapping;
@@ -106,5 +107,12 @@ public class ChatService {
 
   public List<Message> getMessageList(Long chatroomId) {
     return messageRepository.findAllByChatroomId(chatroomId);
+  }
+
+  @Transactional(readOnly = true)
+  public ChatroomDto getChatroom(Long chatroomId) {
+    Chatroom chatroom = chatroomRepository.findById(chatroomId).get();
+
+    return ChatroomDto.from(chatroom);
   }
 }

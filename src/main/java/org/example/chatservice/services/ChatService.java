@@ -7,8 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.chatservice.entities.Chatroom;
 import org.example.chatservice.entities.Member;
 import org.example.chatservice.entities.MemberChatroomMapping;
+import org.example.chatservice.entities.Message;
 import org.example.chatservice.repository.ChatroomRepository;
 import org.example.chatservice.repository.MemberChatroomMappingRepository;
+import org.example.chatservice.repository.MessageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ public class ChatService {
 
   private final ChatroomRepository chatroomRepository;
   private final MemberChatroomMappingRepository memberChatroomMappingRepository;
+  private final MessageRepository messageRepository;
 
   public Chatroom createChatroom(Member member,String title) {
     Chatroom chatroom = Chatroom.builder()
@@ -34,13 +37,17 @@ public class ChatService {
     return chatroom;
   }
 
-  public Boolean joinChatroom(Member member, Long chatroomId) {
-    if(memberChatroomMappingRepository.existsByMemberIdAndChatroomId(member.getId(), chatroomId)){
+  public Boolean joinChatroom(Member member, Long newChatroomId, Long currentChatroomId) {
+    if(currentChatroomId != null) {
+      updateLastCheckedAt(member,currentChatroomId);
+    }
+
+    if(memberChatroomMappingRepository.existsByMemberIdAndChatroomId(member.getId(), newChatroomId)) {
       log.info("이미 참여한 채팅방입니다.");
       return false;
     } // 채팅방이 있을경우
 
-    Chatroom chatroom = chatroomRepository.findById(chatroomId).get();
+    Chatroom chatroom = chatroomRepository.findById(newChatroomId).get();
 
     MemberChatroomMapping memberChatroomMapping = MemberChatroomMapping.builder()
         .member(member)
@@ -49,6 +56,13 @@ public class ChatService {
 
     memberChatroomMapping = memberChatroomMappingRepository.save(memberChatroomMapping); // 채팅방이 없어서 참여가 가능한 경우
     return true;
+  }
+
+  private void updateLastCheckedAt(Member member, Long currentChatroomId) {
+    MemberChatroomMapping memberChatroomMapping = memberChatroomMappingRepository.findByMemberIdAndChatroomId(member.getId(), currentChatroomId).get();
+    memberChatroomMapping.updateLastCheckedAt();
+
+    memberChatroomMappingRepository.save(memberChatroomMapping);
   }
 
   @Transactional
@@ -67,7 +81,30 @@ public class ChatService {
     List<MemberChatroomMapping> memberChatroomMappingList = memberChatroomMappingRepository.findAllByMemberId(member.getId());
 
     return memberChatroomMappingList.stream()
-        .map(MemberChatroomMapping::getChatroom)
+        .map(memberChatroomMapping -> {
+          Chatroom chatroom = memberChatroomMapping.getChatroom();
+          chatroom.setHasNewMessage(
+              messageRepository.existsByChatroomIdAndCreatedAtAfter(chatroom.getId(), memberChatroomMapping.getLastCheckedAt()));
+
+          return chatroom;
+        })
         .toList();
+  }
+
+  public Message saveMessage(Member member, String text, Long chatroomId) {
+    Chatroom chatroom = chatroomRepository.findById(chatroomId).get();
+
+    Message message = Message.builder()
+        .text(text)
+        .member(member)
+        .chatroom(chatroom)
+        .createdAt(LocalDateTime.now())
+        .build();
+
+    return messageRepository.save(message);
+  }
+
+  public List<Message> getMessageList(Long chatroomId) {
+    return messageRepository.findAllByChatroomId(chatroomId);
   }
 }

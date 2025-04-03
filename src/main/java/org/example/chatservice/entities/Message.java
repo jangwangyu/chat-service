@@ -13,29 +13,28 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @Entity
-public class MemberChatroomMapping {
+public class Message {
 
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "member_chatroom_mapping_id")
+  @Column(name = "message_id")
   @Id
   Long id;
+
+  String text;
 
   @JoinColumn(name = "member_id")
   @ManyToOne
   Member member;
 
-  @JoinColumn(name = "chat_room")
+  @JoinColumn(name = "chatroom_id")
   @ManyToOne
   Chatroom chatroom;
 
-  LocalDateTime lastCheckedAt;
+  LocalDateTime createdAt;
 
-  public void updateLastCheckedAt() {
-    this.lastCheckedAt = LocalDateTime.now();
-  }
 }

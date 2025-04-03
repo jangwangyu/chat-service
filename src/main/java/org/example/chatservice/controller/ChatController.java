@@ -1,11 +1,12 @@
 package org.example.chatservice.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.chatservice.dto.ChatMessage;
 import org.example.chatservice.dto.ChatroomDto;
 import org.example.chatservice.entities.Chatroom;
+import org.example.chatservice.entities.Message;
 import org.example.chatservice.services.ChatService;
 import org.example.chatservice.vo.CustomOAuth2User;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,8 +33,8 @@ public class ChatController {
   }
 
   @PostMapping("/{chatroomId}")
-  public Boolean joinChatroom(@AuthenticationPrincipal CustomOAuth2User user, @PathVariable Long chatroomId) {
-    return chatService.joinChatroom(user.getMember(), chatroomId);
+  public Boolean joinChatroom(@AuthenticationPrincipal CustomOAuth2User user, @PathVariable Long chatroomId, @RequestParam(required = false)Long currentChatroomId) {
+    return chatService.joinChatroom(user.getMember(), chatroomId, currentChatroomId);
   }
 
   @DeleteMapping("/{chatroomId}")
@@ -45,5 +46,14 @@ public class ChatController {
   public List<ChatroomDto> getChatrooms(@AuthenticationPrincipal CustomOAuth2User user) {
     List<Chatroom> chatroomList = chatService.getChatroomList(user.getMember());
     return chatroomList.stream().map(ChatroomDto::from).toList();
+  }
+
+  @GetMapping("/{chatroomId}/messages")
+  public List<ChatMessage> getMessages( @PathVariable Long chatroomId) {
+    List<Message> messageList = chatService.getMessageList(chatroomId);
+    return messageList.stream()
+        .map(message -> new ChatMessage(
+            message.getMember().getNickName(), message.getText()))
+        .toList();
   }
 }

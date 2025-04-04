@@ -39,8 +39,8 @@ public class Chatroom {
 
   LocalDateTime createdAt;
 
-  public MemberChatroomMapping addMember(Member member){
-    if(this.getMemberChatroomMappingSet() == null){
+  public MemberChatroomMapping addMember(Member member) {
+    if (this.getMemberChatroomMappingSet() == null) {
       this.memberChatroomMappingSet = new HashSet<>();
     }
 

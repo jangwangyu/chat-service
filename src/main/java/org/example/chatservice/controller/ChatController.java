@@ -29,31 +29,34 @@ public class ChatController {
   @PostMapping
   public ChatroomDto createChatroom(@AuthenticationPrincipal CustomOAuth2User user, @RequestParam String title) {
     Chatroom chatroom = chatService.createChatroom(user.getMember(), title);
+
     return ChatroomDto.from(chatroom);
   }
 
   @PostMapping("/{chatroomId}")
-  public Boolean joinChatroom(@AuthenticationPrincipal CustomOAuth2User user, @PathVariable Long chatroomId, @RequestParam(required = false)Long currentChatroomId) {
+  public Boolean joinChatroom(@AuthenticationPrincipal CustomOAuth2User user, @PathVariable Long chatroomId, @RequestParam(required = false) Long currentChatroomId) {
     return chatService.joinChatroom(user.getMember(), chatroomId, currentChatroomId);
   }
 
   @DeleteMapping("/{chatroomId}")
-  public Boolean removeChatroom(@AuthenticationPrincipal CustomOAuth2User user, @PathVariable Long chatroomId) {
+  public Boolean leaveChatroom(@AuthenticationPrincipal CustomOAuth2User user, @PathVariable Long chatroomId) {
     return chatService.leaveChatroom(user.getMember(), chatroomId);
   }
 
   @GetMapping
-  public List<ChatroomDto> getChatrooms(@AuthenticationPrincipal CustomOAuth2User user) {
+  public List<ChatroomDto> getChatroomList(@AuthenticationPrincipal CustomOAuth2User user) {
     List<Chatroom> chatroomList = chatService.getChatroomList(user.getMember());
-    return chatroomList.stream().map(ChatroomDto::from).toList();
+
+    return chatroomList.stream()
+        .map(ChatroomDto::from)
+        .toList();
   }
 
   @GetMapping("/{chatroomId}/messages")
-  public List<ChatMessage> getMessages( @PathVariable Long chatroomId) {
+  public List<ChatMessage> getMessageList(@PathVariable Long chatroomId) {
     List<Message> messageList = chatService.getMessageList(chatroomId);
     return messageList.stream()
-        .map(message -> new ChatMessage(
-            message.getMember().getNickName(), message.getText()))
+        .map(message -> new ChatMessage(message.getMember().getNickName(), message.getText()))
         .toList();
   }
 }

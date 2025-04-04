@@ -29,7 +29,7 @@ public class MemberChatroomMapping {
   @ManyToOne
   Member member;
 
-  @JoinColumn(name = "chat_room")
+  @JoinColumn(name = "chatroom_id")
   @ManyToOne
   Chatroom chatroom;
 

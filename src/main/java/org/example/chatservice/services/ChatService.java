@@ -24,29 +24,30 @@ public class ChatService {
   private final MemberChatroomMappingRepository memberChatroomMappingRepository;
   private final MessageRepository messageRepository;
 
-  public Chatroom createChatroom(Member member,String title) {
+  public Chatroom createChatroom(Member member, String title) {
     Chatroom chatroom = Chatroom.builder()
         .title(title)
         .createdAt(LocalDateTime.now())
         .build();
-    chatroom = chatroomRepository.save(chatroom); // 채팅방 생성
+
+    chatroom = chatroomRepository.save(chatroom);
 
     MemberChatroomMapping memberChatroomMapping = chatroom.addMember(member);
 
-    memberChatroomMapping = memberChatroomMappingRepository.save(memberChatroomMapping); // 채팅방을 생성한 유저 참여
+    memberChatroomMapping = memberChatroomMappingRepository.save(memberChatroomMapping);
 
     return chatroom;
   }
 
   public Boolean joinChatroom(Member member, Long newChatroomId, Long currentChatroomId) {
-    if(currentChatroomId != null) {
-      updateLastCheckedAt(member,currentChatroomId);
+    if (currentChatroomId != null) {
+      updateLastCheckedAt(member, currentChatroomId);
     }
 
-    if(memberChatroomMappingRepository.existsByMemberIdAndChatroomId(member.getId(), newChatroomId)) {
+    if (memberChatroomMappingRepository.existsByMemberIdAndChatroomId(member.getId(), newChatroomId)) {
       log.info("이미 참여한 채팅방입니다.");
       return false;
-    } // 채팅방이 있을경우
+    }
 
     Chatroom chatroom = chatroomRepository.findById(newChatroomId).get();
 
@@ -55,12 +56,14 @@ public class ChatService {
         .chatroom(chatroom)
         .build();
 
-    memberChatroomMapping = memberChatroomMappingRepository.save(memberChatroomMapping); // 채팅방이 없어서 참여가 가능한 경우
+    memberChatroomMapping = memberChatroomMappingRepository.save(memberChatroomMapping);
+
     return true;
   }
 
   private void updateLastCheckedAt(Member member, Long currentChatroomId) {
-    MemberChatroomMapping memberChatroomMapping = memberChatroomMappingRepository.findByMemberIdAndChatroomId(member.getId(), currentChatroomId).get();
+    MemberChatroomMapping memberChatroomMapping = memberChatroomMappingRepository.findByMemberIdAndChatroomId(member.getId(), currentChatroomId)
+        .get();
     memberChatroomMapping.updateLastCheckedAt();
 
     memberChatroomMappingRepository.save(memberChatroomMapping);
@@ -68,7 +71,7 @@ public class ChatService {
 
   @Transactional
   public Boolean leaveChatroom(Member member, Long chatroomId) {
-    if(!memberChatroomMappingRepository.existsByMemberIdAndChatroomId(member.getId(), chatroomId)){
+    if (!memberChatroomMappingRepository.existsByMemberIdAndChatroomId(member.getId(), chatroomId)) {
       log.info("참여하지 않은 방입니다.");
       return false;
     }
@@ -86,13 +89,12 @@ public class ChatService {
           Chatroom chatroom = memberChatroomMapping.getChatroom();
           chatroom.setHasNewMessage(
               messageRepository.existsByChatroomIdAndCreatedAtAfter(chatroom.getId(), memberChatroomMapping.getLastCheckedAt()));
-
           return chatroom;
         })
         .toList();
   }
 
-  public Message saveMessage(Member member, String text, Long chatroomId) {
+  public Message saveMessage(Member member, Long chatroomId, String text) {
     Chatroom chatroom = chatroomRepository.findById(chatroomId).get();
 
     Message message = Message.builder()
